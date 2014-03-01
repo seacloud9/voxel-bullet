@@ -1,0 +1,31 @@
+{
+    "name": "voxel-bullet",
+    "version": "0.1.0",
+    "description": "creates bullets for voxel.js",
+    "main": "index.js",
+    "dependencies": {
+        "lsb": "~0.1.0",
+        "inherits": "~2.0.0"
+    },
+    "devDependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/substack/voxel-creature.git"
+    },
+    "homepage": "https://github.com/substack/voxel-creature",
+    "keywords": [
+        "voxel",
+        "Bullet",
+        "game"
+    ],
+    "author": {
+        "name": "Brendon Smith",
+        "email": "brendonsmith@seacloud9.org",
+        "url": "http://seacloud9.org"
+    },
+    "license": "MIT",
+    "readme": "# voxel-bullet # license\n\nMIT\n",
+    "readmeFilename": "readme.markdown",
+    "_id": "voxel-bullet@0.1.0",
+    "_from": "voxel-bullet@0.1.0"
+}
