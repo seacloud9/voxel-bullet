@@ -10,9 +10,9 @@
     "devDependencies": {},
     "repository": {
         "type": "git",
-        "url": "git://github.com/substack/voxel-creature.git"
+        "url": "https://github.com/seacloud9/voxel-bullet.git"
     },
-    "homepage": "https://github.com/substack/voxel-creature",
+    "homepage": "git://github.com/seacloud9/voxel-bullet",
     "keywords": [
         "voxel",
         "Bullet",
