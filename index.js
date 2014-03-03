@@ -35,7 +35,7 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
     if (opts.rootPosition == undefined) opts.rootPosition = new game.THREE.Vector3(1, 1, 1);
     if (opts.bulletPosition == undefined) opts.bulletPosition = [new game.THREE.Vector3(1, 1, 1)];
     if (opts.radius === undefined) opts.radius = 50;
-    if (opts.collisionRadius === undefined) opts.collisionRadius = 2;
+    if (opts.collisionRadius === undefined) opts.collisionRadius = 10;
     if (opts.interval === undefined) opts.interval = 1000;
     if (opts.owner == undefined) this.owner = this.type[1];
     for (var i = 0; i < opts.count; i++) {
@@ -60,6 +60,7 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
         var _bT = {};
         _bT.collisionRadius = opts.collisionRadius;
         _bT.mesh = this.local[i];
+        _bT.id = this.live.length;
         _bT._event = new events.EventEmitter();
         _bT._events = _bT._event._events;
         _bT.game = game;
@@ -71,18 +72,30 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
         };
         _bT.item = game.addItem(_bT);
         _bT.notice = function(target, opts) {
-            var sefl = this;
-            if (!opts) opts = {};
-            if (opts.radius === undefined) opts.radius = 200;
-            if (opts.collisionRadius === undefined) opts.collisionRadius = 100;
-            if (opts.interval === undefined) opts.interval = 2;
-            var pos = target.position || target;
-            return setInterval(function() {
-                var dist = sefl.mesh.position.distanceTo(pos);
-                if (dist < sefl.collisionRadius) {
-                    sefl._event.emit('collide', target);
-                }
-            }, opts.interval);
+            try {
+                var sefl = this;
+                if (!opts) opts = {};
+                if (opts.radius === undefined) opts.radius = 200;
+                if (opts.collisionRadius === undefined) opts.collisionRadius = 500;
+                if (opts.interval === undefined) opts.interval = 50;
+                var pos = target.position || target;
+                return setInterval(function() {
+                    try {
+                        var dist = sefl.mesh.position.distanceTo(pos);
+                        if (dist < sefl.collisionRadius) {
+                            sefl._event.emit('collide', target);
+                        }
+                    } catch (e) {}
+
+                }, opts.interval);
+            } catch (e) {}
+
+        }
+
+        _bT.Destory = function() {
+            _bT._events = null;
+            _bT._event = null;
+            delete _bT;
         }
 
         if (opts.target != undefined) {
@@ -92,8 +105,14 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
                     radius: 500
                 });
                 _bT._event.on('collide', function(cTarget) {
-                    console.log('collideX')
-                    game.scene.remove(cTarget.item.avatar);
+                    try {
+                        console.log('collideX');
+                        cTarget.Explode();
+                        game.scene.remove(_bT);
+                        delete cTarget;
+                        delete _bT;
+                    } catch (e) {}
+
                 });
             }
         }
@@ -102,6 +121,7 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
     }
 
 
-    return this.local;
+
+    return this.live;
 
 }
