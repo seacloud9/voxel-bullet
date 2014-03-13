@@ -12,11 +12,24 @@ module.exports.Bullet = Bullet;
 function Bullet(game, opts) {
     this.game = game;
     if (!opts) opts = {};
-    if (opts.mesh == undefined) opts.mesh = new game.THREE.SphereGeometry(2, 6, 6);
-    if (opts.material == undefined) opts.material = new game.THREE.MeshBasicMaterial({
-        color: 0xffffff
+    if (opts.mesh == undefined) opts.mesh = new game.THREE.SphereGeometry(2, 4, 4);
+    if (opts.material == undefined) opts.material = new game.THREE.MeshLambertMaterial({
+        color: 0x7C0400,
+        ambient: 0x660000
     });
     if (opts.speed == undefined) opts.speed = 0.25;
+    if (opts.spriteMaterial == undefined) opts.spriteMaterial = new game.THREE.SpriteMaterial({
+        map: new game.THREE.ImageUtils.loadTexture('images/glow.png'),
+        useScreenCoordinates: false,
+        alignment: game.THREE.SpriteAlignment.center,
+        color: 0xff1a00,
+        transparent: false,
+        blending: game.THREE.AdditiveBlending
+    });
+    if (opts.sprite == undefined) opts.sprite = new game.THREE.Sprite(opts.spriteMaterial);
+    opts.sprite.scale.set(8, 8, 1.0);
+    this.spriteMaterial = opts.spriteMaterial;
+    this.sprite = opts.sprite;
     this.speed = opts.speed;
     this.mesh = opts.mesh;
     this.material = opts.material;
@@ -37,11 +50,13 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
     if (opts.radius === undefined) opts.radius = 50;
     if (opts.collisionRadius === undefined) opts.collisionRadius = 10;
     if (opts.interval === undefined) opts.interval = 1000;
+    if (opts.damage == undefined) this.damage = 5;
     if (opts.owner == undefined) this.owner = this.type[1];
     for (var i = 0; i < opts.count; i++) {
         this.local[i] = new game.THREE.Mesh(this.mesh, this.material);
         this.local[i].position.set(opts.bulletPosition[i].x, opts.bulletPosition[i].y, opts.bulletPosition[i].z);
         this.local[i].useQuaternion = true;
+        //this.local[i].add(this.sprite);
     }
     if (this.owner) {
         if (camera == undefined) return console.log('player requires a camera. ');
@@ -51,7 +66,12 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
             this.local[i].ray = ray;
         }
     } else {
-
+        //this.pro.unprojectVector(opts.rootVector, camera);
+        var ray = new game.THREE.Ray(opts.rootPosition, opts.rootVector.sub(opts.rootPosition).normalize());
+        for (var i = 0; i < opts.count; i++) {
+            this.local[i].ray = ray;
+        }
+        //console.log(this);
     }
     var events = require('events');
 
@@ -61,6 +81,8 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
         _bT.collisionRadius = opts.collisionRadius;
         _bT.mesh = this.local[i];
         _bT.id = this.live.length;
+        _bT.owner = this.owner;
+        _bT.damage = this.damage;
         _bT._event = new events.EventEmitter();
         _bT._events = _bT._event._events;
         _bT.game = game;
@@ -101,17 +123,26 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
         if (opts.target != undefined) {
             for (var x = 0; x < opts.target.length; x++) {
                 var cTarget = opts.target[x];
+                // console.log(cTarget);
                 _bT.notice(cTarget, {
                     radius: 500
                 });
                 _bT._event.on('collide', function(cTarget) {
                     try {
-                        console.log('collideX');
-                        cTarget.Explode();
+                        //console.log('collideX');
+                        if (!_bT.owner && _initGame) {
+                            //console.log(_bT.owner)
+                            player.health -= _bT.damage;
+                            healtHit(1.0 - (player.health / 100));
+                            _bT.mesh.visible = false;
+                        }
                         game.scene.remove(_bT);
+                        game.score += cTarget.Explode();
                         delete cTarget;
                         delete _bT;
-                    } catch (e) {}
+                    } catch (e) {
+                        //console.log(e)
+                    }
 
                 });
             }
