@@ -48,7 +48,7 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
     if (opts.rootPosition == undefined) opts.rootPosition = new game.THREE.Vector3(1, 1, 1);
     if (opts.bulletPosition == undefined) opts.bulletPosition = [new game.THREE.Vector3(1, 1, 1)];
     if (opts.radius === undefined) opts.radius = 50;
-    if (opts.collisionRadius === undefined) opts.collisionRadius = 10;
+    if (opts.collisionRadius === undefined) opts.collisionRadius = 30;
     if (opts.interval === undefined) opts.interval = 1000;
     if (opts.damage == undefined) this.damage = 5;
     if (opts.owner == undefined) this.owner = this.type[1];
@@ -56,7 +56,7 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
         this.local[i] = new game.THREE.Mesh(this.mesh, this.material);
         this.local[i].position.set(opts.bulletPosition[i].x, opts.bulletPosition[i].y, opts.bulletPosition[i].z);
         this.local[i].useQuaternion = true;
-        //this.local[i].add(this.sprite);
+        this.local[i].add(this.sprite);
     }
     if (this.owner) {
         if (camera == undefined) return console.log('player requires a camera. ');
@@ -66,7 +66,6 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
             this.local[i].ray = ray;
         }
     } else {
-        //this.pro.unprojectVector(opts.rootVector, camera);
         var ray = new game.THREE.Ray(opts.rootPosition, opts.rootVector.sub(opts.rootPosition).normalize());
         for (var i = 0; i < opts.count; i++) {
             this.local[i].ray = ray;
@@ -115,8 +114,10 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
         }
 
         _bT.Destory = function() {
+            _bT._event.removeAllListeners();
             _bT._events = null;
             _bT._event = null;
+            game.scene.remove(_bT.mesh);
             delete _bT;
         }
 
@@ -129,9 +130,7 @@ Bullet.prototype.BuildBullets = function(opts, camera) {
                 });
                 _bT._event.on('collide', function(cTarget) {
                     try {
-                        //console.log('collideX');
                         if (!_bT.owner && _initGame) {
-                            //console.log(_bT.owner)
                             player.health -= _bT.damage;
                             healtHit(1.0 - (player.health / 100));
                             _bT.mesh.visible = false;
